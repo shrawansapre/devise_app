@@ -1,0 +1,81 @@
+<% provide(:title, @user.name) %>
+<div class="row">
+  <aside class="span4">
+    <section>
+      
+	<% if !@user.avatar.nil? %>
+	
+        <%= image_tag @user.avatar.url(:thumb) %>
+	<% end %>
+	<h1>
+        <%= @user.name %>  
+      </h1>
+    </section>
+    <section>
+      <%= render 'shared/stats' %>
+    </section>
+  </aside>
+  <div class="span8">
+    <%= render 'follow_form' if signed_in? %>
+      <h3>Microposts (<%= @user.microposts.count %>)</h3>
+      <div id="masonry-container" class="masonry-container .transitions-enabled infinite-scroll clearfix masonry .masonry-brick">
+      <ol class="microposts">
+        <%= render @microposts %>
+      </ol>
+      </div>
+    
+  </div>
+</div>
+
+
+<script>
+$(function(){
+
+  var $container = $('#masonry-container');
+
+  $container.imagesLoaded(function(){
+    $container.masonry({
+      itemSelector: '.box',
+      columnWidth: function( containerWidth ) {
+        
+            var width = $(window).width();
+            var col = 30;
+            
+
+            if(width < 1200 && width >= 980) {
+                col = 90;
+            }
+            else if(width < 980 && width >= 768) {
+                col = 56;
+            }
+        
+            return col;
+          },
+      gutterWidth: 0,
+      isFitWidth: false
+    });
+  });
+
+  $container.infinitescroll({
+    navSelector  : '#page-nav',    // selector for the paged navigation 
+    nextSelector : '#page-nav a',  // selector for the NEXT link (to page 2)
+    itemSelector : '.box',     // selector for all items you'll retrieve
+    loading: {
+        finishedMsg: 'No more pages to load.',
+        img: 'http://i.imgur.com/6RMhx.gif'
+      }
+    },
+    // trigger Masonry as a callback
+    function( newElements ) {
+      // hide new items while they are loading
+      var $newElems = $( newElements ).css({ opacity: 0 });
+      // ensure that images load before adding to masonry layout
+      $newElems.imagesLoaded(function(){
+        // show elems now they're ready
+        $newElems.animate({ opacity: 1 });
+        $container.masonry( 'appended', $newElems, true ); 
+      });
+    }
+  );
+});
+</script>
